@@ -18,6 +18,10 @@ var VirtualList = React.createClass({
     return { winStart: 0, top: 0, bottom: null, scrollbarTop: 0, scrollbarHeight: 0 };
   },
 
+  componentDidMount: function componentDidMount() {
+    this.scroll(0);
+  },
+
   render: function render() {
     var content = this.props.content,
         items = content.slice(this.state.winStart, this.state.winStart + this.props.windowSize),
@@ -54,7 +58,7 @@ var VirtualList = React.createClass({
           );
         }, this)
       ),
-      React.createElement("div", { ref: "scrollbar", className: "VirtualList-scrollbar", style: sstyle })
+      React.createElement("div", { className: "VirtualList-scrollbar", style: sstyle, onMouseDown: this.onScrollStart })
     );
   },
 
@@ -142,6 +146,36 @@ var VirtualList = React.createClass({
     if (e.deltaY !== 0) {
       this.scroll(e.deltaY);
     }
+  },
+
+  onScrollStart: function onScrollStart(e) {
+    this.clientY = e.clientY;
+    document.addEventListener("mousemove", this._onScroll = this.onScroll.bind(this));
+    document.addEventListener("mouseup", this._onScrollStop = this.onScrollStop.bind(this));
+  },
+
+  onScroll: function onScroll(e) {
+    e.preventDefault();
+    if (this.clientY === e.clientY) {
+      return;
+    }
+    var estContentH = this.props.content.length * this.averageItemHeight();
+    var windowH = this.getDOMNode().clientHeight;
+    var rawDelta = e.clientY - this.clientY;
+    var delta = Math.round(rawDelta / windowH * estContentH);
+    this.scroll(delta);
+    this.clientY = e.clientY;
+  },
+
+  onScrollStop: function onScrollStop() {
+    this.clientY = null;
+    document.removeEventListener("mousemove", this._onScroll);
+    document.removeEventListener("mouseup", this._onScrollStop);
+  },
+
+  averageItemHeight: function averageItemHeight() {
+    var contentNode = this.refs.content.getDOMNode();
+    return contentNode.offsetHeight / contentNode.childNodes.length;
   }
 });
 
