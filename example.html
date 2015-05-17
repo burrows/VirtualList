@@ -50,11 +50,9 @@
     var App = React.createClass({
       displayName: "App",
       render: function() {
-        return React.createElement('div', {className: 'container'}, [
-          React.createElement(VirtualList, {content: content}, [
-            React.createElement(ItemView, {})
-          ])
-        ]);
+        return React.createElement('div', {className: 'container'},
+          React.createElement(VirtualList, {content: content}, React.createElement(ItemView, {}))
+        );
       }
     });
 
