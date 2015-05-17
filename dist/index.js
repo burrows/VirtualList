@@ -80,6 +80,11 @@ var VirtualList = React.createClass({
           break;
         }
       }
+
+      // ensure that we don't scroll past the bottom of the list
+      if (winStart === maxWinStart) {
+        top = Math.min(top, contentNode.offsetHeight - node.clientHeight);
+      }
     } else if (delta < 0) {
       if (typeof top === "number") {
         bottom = contentNode.offsetHeight - node.offsetHeight - top;
@@ -100,6 +105,11 @@ var VirtualList = React.createClass({
           break;
         }
       }
+    }
+
+    // ensure that we don't scroll past the top of the list
+    if (winStart === 0) {
+      bottom = Math.min(bottom, contentNode.offsetHeight - node.clientHeight);
     }
 
     this.setState({ winStart: winStart, top: top, bottom: bottom });
