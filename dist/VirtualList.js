@@ -62,7 +62,7 @@ this["VirtualList"] =
 	  },
 
 	  getInitialState: function getInitialState() {
-	    return { winStart: 0, top: 0, bottom: null };
+	    return { winStart: 0, top: 0, bottom: null, scrollbarTop: 0, scrollbarHeight: 0 };
 	  },
 
 	  render: function render() {
@@ -75,6 +75,16 @@ this["VirtualList"] =
 	      bottom: typeof this.state.bottom === "number" ? -this.state.bottom : null,
 	      left: 0,
 	      right: 0
+	    },
+	        sstyle = {
+	      position: "absolute",
+	      top: this.state.scrollbarTop,
+	      height: this.state.scrollbarHeight,
+	      right: 1,
+	      width: 7,
+	      backgroundColor: "#000",
+	      opacity: 0.5,
+	      borderRadius: 10
 	    };
 
 	    return React.createElement(
@@ -90,7 +100,8 @@ this["VirtualList"] =
 	            React.addons.cloneWithProps(this.props.children, { content: item })
 	          );
 	        }, this)
-	      )
+	      ),
+	      React.createElement("div", { ref: "scrollbar", className: "VirtualList-scrollbar", style: sstyle })
 	    );
 	  },
 
@@ -159,7 +170,17 @@ this["VirtualList"] =
 	      }
 	    }
 
-	    this.setState({ winStart: winStart, top: top, bottom: bottom });
+	    // calculate scrollbar position and height
+	    var avgItemH = contentH / itemNodes.length;
+	    var estContentH = avgItemH * content.length;
+	    var windowContentRatio = windowH / estContentH;
+	    var scrollbarHeight = Math.min(windowH, Math.max(20, Math.round(windowH * windowContentRatio)));
+	    var scrollH = estContentH - windowH;
+	    var windowPos = top !== null ? winStart * avgItemH + top : winStart * avgItemH + (contentH - windowH - bottom);
+	    var windowPosRatio = windowPos / scrollH;
+	    var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
+
+	    this.setState({ winStart: winStart, top: top, bottom: bottom, scrollbarTop: scrollbarTop, scrollbarHeight: scrollbarHeight });
 	  },
 
 	  onWheel: function onWheel(e) {
