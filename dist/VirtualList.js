@@ -47,8 +47,6 @@ this["VirtualList"] =
 
 	"use strict";
 
-	var DEFAULT_WIN_SIZE = 10;
-
 	var slice = Array.prototype.slice;
 
 	var VirtualList = React.createClass({
@@ -59,14 +57,17 @@ this["VirtualList"] =
 	    windowSize: React.PropTypes.number
 	  },
 
-	  componentWillMount: function componentWillMount() {
-	    this.itemView = this.props.children;
-	    this.state = { winSize: this.props.windowSize || DEFAULT_WIN_SIZE, winStart: 0, top: 0, bottom: null };
+	  getDefaultProps: function getDefaultProps() {
+	    return { windowSize: 10 };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return { winStart: 0, top: 0, bottom: null };
 	  },
 
 	  render: function render() {
 	    var content = this.props.content,
-	        items = content.slice(this.state.winStart, this.state.winStart + this.state.winSize),
+	        items = content.slice(this.state.winStart, this.state.winStart + this.props.windowSize),
 	        style = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflowY: "hidden" },
 	        cstyle = {
 	      position: "absolute",
@@ -86,7 +87,7 @@ this["VirtualList"] =
 	          return React.createElement(
 	            "div",
 	            { key: i, className: "VirtualList-item" },
-	            React.addons.cloneWithProps(this.itemView, { content: item })
+	            React.addons.cloneWithProps(this.props.children, { content: item })
 	          );
 	        }, this)
 	      )
@@ -94,23 +95,28 @@ this["VirtualList"] =
 	  },
 
 	  scroll: function scroll(delta) {
-	    var maxWinSize = this.props.windowSize || DEFAULT_WIN_SIZE,
-	        winSize = Math.min(maxWinSize, this.props.content.length),
+	    var content = this.props.content,
+	        winSize = Math.min(this.props.windowSize, this.props.content.length),
 	        maxWinStart = content.length - winSize,
-	        winStart = Math.min(maxWinStart, this.state.winStart),
+	        winStart = this.state.winStart,
 	        node = this.getDOMNode(),
 	        contentNode = this.refs.content.getDOMNode(),
-	        contentH = contentNode.offsetHeight,
 	        itemNodes = slice.call(contentNode.childNodes),
+	        windowH = node.clientHeight,
+	        contentH = contentNode.offsetHeight,
 	        top = this.state.top,
 	        bottom = this.state.bottom,
 	        i,
 	        n;
 
 	    if (delta > 0) {
-	      if (typeof bottom === "number") {
+	      if (bottom !== null) {
 	        top = contentNode.offsetHeight - node.offsetHeight - bottom;
 	        bottom = null;
+	      }
+
+	      if (winStart === maxWinStart && delta > contentH - windowH - top) {
+	        delta = Math.max(0, contentH - windowH - top);
 	      }
 
 	      top += delta;
@@ -127,15 +133,14 @@ this["VirtualList"] =
 	          break;
 	        }
 	      }
-
-	      // ensure that we don't scroll past the bottom of the list
-	      if (winStart === maxWinStart) {
-	        top = Math.min(top, contentNode.offsetHeight - node.clientHeight);
-	      }
 	    } else if (delta < 0) {
-	      if (typeof top === "number") {
+	      if (top !== null) {
 	        bottom = contentNode.offsetHeight - node.offsetHeight - top;
 	        top = null;
+	      }
+
+	      if (winStart === 0 && -delta > contentH - windowH - bottom) {
+	        delta = -Math.max(0, contentH - windowH - bottom);
 	      }
 
 	      bottom = bottom + -delta;
@@ -152,11 +157,6 @@ this["VirtualList"] =
 	          break;
 	        }
 	      }
-	    }
-
-	    // ensure that we don't scroll past the top of the list
-	    if (winStart === 0) {
-	      bottom = Math.min(bottom, contentNode.offsetHeight - node.clientHeight);
 	    }
 
 	    this.setState({ winStart: winStart, top: top, bottom: bottom });
