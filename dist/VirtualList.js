@@ -208,8 +208,8 @@ this["VirtualList"] =
 
 	  onScrollStart: function onScrollStart(e) {
 	    this.clientY = e.clientY;
-	    document.addEventListener("mousemove", this._onScroll = this.onScroll.bind(this));
-	    document.addEventListener("mouseup", this._onScrollStop = this.onScrollStop.bind(this));
+	    document.addEventListener("mousemove", this.onScroll);
+	    document.addEventListener("mouseup", this.onScrollStop);
 	  },
 
 	  onScroll: function onScroll(e) {
@@ -227,8 +227,8 @@ this["VirtualList"] =
 
 	  onScrollStop: function onScrollStop() {
 	    this.clientY = null;
-	    document.removeEventListener("mousemove", this._onScroll);
-	    document.removeEventListener("mouseup", this._onScrollStop);
+	    document.removeEventListener("mousemove", this.onScroll);
+	    document.removeEventListener("mouseup", this.onScrollStop);
 	  },
 
 	  averageItemHeight: function averageItemHeight() {
