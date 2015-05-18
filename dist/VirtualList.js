@@ -121,33 +121,20 @@ this["VirtualList"] =
 	        contentH = contentNode.offsetHeight,
 	        top = this.state.top,
 	        bottom = this.state.bottom,
+	        rem,
 	        i,
 	        n;
 
-	    if (delta > 0) {
-	      if (bottom !== null) {
-	        top = contentNode.offsetHeight - node.offsetHeight - bottom;
-	        bottom = null;
-	      }
-
-	      if (winStart === maxWinStart && delta > contentH - windowH - top) {
-	        delta = Math.max(0, contentH - windowH - top);
-	      }
-
-	      top += delta;
-
-	      for (i = 0, n = itemNodes.length; i < n; i++) {
-	        if (winStart === maxWinStart) {
-	          break;
-	        }
-
-	        if (top > itemNodes[i].offsetTop + itemNodes[i].offsetHeight) {
-	          winStart++;
-	          top = top - itemNodes[i].offsetHeight;
-	        } else {
-	          break;
-	        }
-	      }
+	    if (delta < -contentH) {
+	      rem = Math.round((-delta - top) / this.averageItemHeight());
+	      winStart = Math.max(0, winStart - rem);
+	      top = 0;
+	      bottom = null;
+	    } else if (delta > contentH) {
+	      rem = Math.round((delta - contentH - top) / this.averageItemHeight());
+	      winStart = Math.min(maxWinStart, winStart + winSize + rem);
+	      top = 0;
+	      bottom = null;
 	    } else if (delta < 0) {
 	      if (top !== null) {
 	        bottom = contentNode.offsetHeight - node.offsetHeight - top;
@@ -168,6 +155,30 @@ this["VirtualList"] =
 	        if (bottom > itemNodes[i].offsetHeight) {
 	          winStart--;
 	          bottom = bottom - itemNodes[i].offsetHeight;
+	        } else {
+	          break;
+	        }
+	      }
+	    } else if (delta > 0) {
+	      if (bottom !== null) {
+	        top = contentNode.offsetHeight - node.offsetHeight - bottom;
+	        bottom = null;
+	      }
+
+	      if (winStart === maxWinStart && delta > contentH - windowH - top) {
+	        delta = Math.max(0, contentH - windowH - top);
+	      }
+
+	      top += delta;
+
+	      for (i = 0, n = itemNodes.length; i < n; i++) {
+	        if (winStart === maxWinStart) {
+	          break;
+	        }
+
+	        if (top > itemNodes[i].offsetTop + itemNodes[i].offsetHeight) {
+	          winStart++;
+	          top = top - itemNodes[i].offsetHeight;
 	        } else {
 	          break;
 	        }
