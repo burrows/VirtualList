@@ -109,6 +109,15 @@ this["VirtualList"] =
 	    );
 	  },
 
+	  componentDidUpdate: function componentDidUpdate() {
+	    var first = this.findFirstVisible();
+
+	    if (this.props.onFirstVisibleChange && first !== this._first) {
+	      this.props.onFirstVisibleChange(first);
+	      this._first = first;
+	    }
+	  },
+
 	  scroll: function scroll(delta) {
 	    var content = this.props.content,
 	        winSize = Math.min(this.props.windowSize, this.props.content.length),
@@ -234,6 +243,20 @@ this["VirtualList"] =
 	  averageItemHeight: function averageItemHeight() {
 	    var contentNode = this.refs.content.getDOMNode();
 	    return contentNode.offsetHeight / contentNode.childNodes.length;
+	  },
+
+	  findFirstVisible: function findFirstVisible() {
+	    var contentNode = this.refs.content.getDOMNode();
+	    var contentOffset = -contentNode.offsetTop;
+	    var itemNodes = slice.call(contentNode.childNodes);
+	    var i = this.state.winStart;
+
+	    while (itemNodes.length && itemNodes[0].offsetTop + itemNodes[0].offsetHeight < contentOffset) {
+	      itemNodes.shift();
+	      i++;
+	    }
+
+	    return this.props.content[i];
 	  }
 	});
 

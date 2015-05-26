@@ -57,6 +57,15 @@ var VirtualList = React.createClass({
     );
   },
 
+  componentDidUpdate() {
+    var first = this.findFirstVisible();
+
+    if (this.props.onFirstVisibleChange && first !== this._first) {
+      this.props.onFirstVisibleChange(first);
+      this._first = first;
+    }
+  },
+
   scroll(delta) {
     var content = this.props.content,
         winSize = Math.min(this.props.windowSize, this.props.content.length),
@@ -179,6 +188,20 @@ var VirtualList = React.createClass({
   averageItemHeight() {
     var contentNode = this.refs.content.getDOMNode();
     return contentNode.offsetHeight / contentNode.childNodes.length;
+  },
+
+  findFirstVisible() {
+    var contentNode   = this.refs.content.getDOMNode();
+    var contentOffset = -contentNode.offsetTop;
+    var itemNodes     = slice.call(contentNode.childNodes);
+    var i             = this.state.winStart;
+
+    while (itemNodes.length && itemNodes[0].offsetTop + itemNodes[0].offsetHeight < contentOffset) {
+      itemNodes.shift();
+      i++;
+    }
+
+    return this.props.content[i];
   }
 });
 

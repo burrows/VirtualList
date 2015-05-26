@@ -48,10 +48,22 @@
 
     var App = React.createClass({
       displayName: "App",
+      getInitialState: function() {
+        return {first: null};
+      },
       render: function() {
-        return React.createElement('div', {className: 'container'},
-          React.createElement(VirtualList, {content: content}, React.createElement(ItemView, {}))
-        );
+        var _this = this, first = this.state.first;
+        return React.createElement('div', {}, [
+          React.createElement('div', {}, first && first.id),
+          React.createElement('div', {className: 'container'},
+            React.createElement(VirtualList, {
+              content: content,
+              onFirstVisibleChange: function(content) {
+                _this.setState({first: content});
+              }
+            }, React.createElement(ItemView, {}))
+          )
+        ]);
       }
     });
 
