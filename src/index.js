@@ -40,7 +40,7 @@ var VirtualList = React.createClass({
     };
 
     return (
-      <div className="VirtualList" style={style} onWheel={this.onWheel}>
+      <div className="VirtualList" tabIndex="0" style={style} onWheel={this.onWheel} onKeyDown={this.onKeyDown}>
         <div ref="content" className="VirtualList-content" style={cstyle}>
           {items.map(function(item, i) {
             return (
@@ -152,12 +152,30 @@ var VirtualList = React.createClass({
     var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
 
     this.setState({winStart, top, bottom, scrollbarTop, scrollbarHeight});
+
+    return this;
+  },
+
+  pageDown() {
+    return this.scroll(this.getDOMNode().clientHeight);
+  },
+
+  pageUp() {
+    return this.scroll(-this.getDOMNode().clientHeight);
   },
 
   onWheel(e) {
     e.preventDefault();
     e.stopPropagation();
     if (e.deltaY !== 0) { this.scroll(e.deltaY); }
+  },
+
+  onKeyDown(e) {
+    if (e.which === 32)      { if (e.shiftKey) { this.pageUp(); } else { this.pageDown(); } }
+    else if (e.which === 33) { this.pageUp(); }
+    else if (e.which === 34) { this.pageDown(); }
+    else if (e.which === 38) { this.scroll(-20); }
+    else if (e.which === 40) { this.scroll(20); }
   },
 
   onScrollStart(e) {

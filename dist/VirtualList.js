@@ -92,7 +92,7 @@ this["VirtualList"] =
 
 	    return React.createElement(
 	      "div",
-	      { className: "VirtualList", style: style, onWheel: this.onWheel },
+	      { className: "VirtualList", tabIndex: "0", style: style, onWheel: this.onWheel, onKeyDown: this.onKeyDown },
 	      React.createElement(
 	        "div",
 	        { ref: "content", className: "VirtualList-content", style: cstyle },
@@ -202,6 +202,18 @@ this["VirtualList"] =
 	    var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
 
 	    this.setState({ winStart: winStart, top: top, bottom: bottom, scrollbarTop: scrollbarTop, scrollbarHeight: scrollbarHeight });
+
+	    return this;
+	  },
+
+	  pageDown: function pageDown() {
+	    console.log("pageDown:", this.getDOMNode().clientHeight);
+	    return this.scroll(this.getDOMNode().clientHeight);
+	  },
+
+	  pageUp: function pageUp() {
+	    console.log("pageUp:", -this.getDOMNode().clientHeight);
+	    return this.scroll(-this.getDOMNode().clientHeight);
 	  },
 
 	  onWheel: function onWheel(e) {
@@ -209,6 +221,24 @@ this["VirtualList"] =
 	    e.stopPropagation();
 	    if (e.deltaY !== 0) {
 	      this.scroll(e.deltaY);
+	    }
+	  },
+
+	  onKeyDown: function onKeyDown(e) {
+	    if (e.which === 32) {
+	      if (e.shiftKey) {
+	        this.pageUp();
+	      } else {
+	        this.pageDown();
+	      }
+	    } else if (e.which === 33) {
+	      this.pageUp();
+	    } else if (e.which === 34) {
+	      this.pageDown();
+	    } else if (e.which === 38) {
+	      this.scroll(-20);
+	    } else if (e.which === 40) {
+	      this.scroll(20);
 	    }
 	  },
 
