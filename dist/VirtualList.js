@@ -70,16 +70,16 @@ this["VirtualList"] =
 	  },
 
 	  render: function render() {
-	    var items = this.props.items.slice(this.state.winStart, this.state.winStart + this.props.windowSize),
-	        style = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflowY: "hidden" },
-	        cstyle = {
+	    var items = this.props.items.slice(this.state.winStart, this.state.winStart + this.props.windowSize);
+	    var style = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflowY: "hidden" };
+	    var cstyle = {
 	      position: "absolute",
 	      top: typeof this.state.top === "number" ? -this.state.top : null,
 	      bottom: typeof this.state.bottom === "number" ? -this.state.bottom : null,
 	      left: 0,
 	      right: 0
-	    },
-	        sstyle = {
+	    };
+	    var sstyle = {
 	      position: "absolute",
 	      top: this.state.scrollbarTop,
 	      height: this.state.scrollbarHeight,
@@ -118,20 +118,18 @@ this["VirtualList"] =
 	  },
 
 	  scroll: function scroll(delta) {
-	    var items = this.props.items,
-	        winSize = Math.min(this.props.windowSize, items.length),
-	        maxWinStart = items.length - winSize,
-	        winStart = this.state.winStart,
-	        node = this.getDOMNode(),
-	        contentNode = this.refs.content.getDOMNode(),
-	        itemNodes = slice.call(contentNode.childNodes),
-	        windowH = node.clientHeight,
-	        contentH = contentNode.offsetHeight,
-	        top = this.state.top,
-	        bottom = this.state.bottom,
-	        rem,
-	        i,
-	        n;
+	    var items = this.props.items;
+	    var winSize = Math.min(this.props.windowSize, items.length);
+	    var maxWinStart = items.length - winSize;
+	    var winStart = this.state.winStart;
+	    var node = this.getDOMNode();
+	    var contentNode = this.refs.content.getDOMNode();
+	    var itemNodes = slice.call(contentNode.childNodes);
+	    var windowH = node.clientHeight;
+	    var contentH = contentNode.offsetHeight;
+	    var top = this.state.top;
+	    var bottom = this.state.bottom;
+	    var rem, i, n;
 
 	    if (delta < -contentH) {
 	      rem = Math.round((-delta - top) / this.averageItemHeight());
