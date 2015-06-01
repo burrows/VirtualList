@@ -191,29 +191,51 @@ this["VirtualList"] =
 	      }
 	    }
 
-	    // calculate scrollbar position and height
-	    var avgItemH = contentH / itemNodes.length;
-	    var estContentH = avgItemH * items.length;
-	    var windowContentRatio = windowH / estContentH;
-	    var scrollbarHeight = Math.min(windowH, Math.max(20, Math.round(windowH * windowContentRatio)));
-	    var scrollH = estContentH - windowH;
-	    var windowPos = top !== null ? winStart * avgItemH + top : winStart * avgItemH + (contentH - windowH - bottom);
-	    var windowPosRatio = windowPos / scrollH;
-	    var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
+	    var scrollbarPos = this.calcScrollbarPos(winStart, top, bottom);
 
-	    this.setState({ winStart: winStart, top: top, bottom: bottom, scrollbarTop: scrollbarTop, scrollbarHeight: scrollbarHeight });
+	    this.setState({
+	      winStart: winStart,
+	      top: top,
+	      bottom: bottom,
+	      scrollbarTop: scrollbarPos.scrollbarTop,
+	      scrollbarHeight: scrollbarPos.scrollbarHeight
+	    });
 
 	    return this;
 	  },
 
 	  pageDown: function pageDown() {
-	    console.log("pageDown:", this.getDOMNode().clientHeight);
 	    return this.scroll(this.getDOMNode().clientHeight);
 	  },
 
 	  pageUp: function pageUp() {
-	    console.log("pageUp:", -this.getDOMNode().clientHeight);
 	    return this.scroll(-this.getDOMNode().clientHeight);
+	  },
+
+	  scrollToItem: function scrollToItem(item) {
+	    var items = this.props.items;
+	    var winSize = Math.min(this.props.windowSize, items.length);
+	    var maxWinStart = items.length - winSize;
+	    var index = this.props.items.indexOf(item);
+
+	    if (index === -1) {
+	      throw new Error("VirtualList#scrollToItem: item " + item + " not found.");
+	    }
+
+	    var winStart = Math.min(maxWinStart, index);
+	    var top = 0;
+	    var bottom = null;
+	    var scrollbarPos = this.calcScrollbarPos(winStart, top, bottom);
+
+	    this.setState({
+	      winStart: winStart,
+	      top: top,
+	      bottom: bottom,
+	      scrollbarTop: scrollbarPos.scrollbarTop,
+	      scrollbarHeight: scrollbarPos.scrollbarHeight
+	    });
+
+	    return this;
 	  },
 
 	  onWheel: function onWheel(e) {
@@ -284,6 +306,23 @@ this["VirtualList"] =
 	    }
 
 	    return this.props.items[i];
+	  },
+
+	  calcScrollbarPos: function calcScrollbarPos(winStart, top, bottom) {
+	    var contentNode = this.refs.content.getDOMNode();
+	    var contentH = contentNode.offsetHeight;
+	    var numItemNodes = contentNode.childNodes.length;
+	    var windowH = this.getDOMNode().clientHeight;
+	    var avgItemH = contentH / numItemNodes;
+	    var estContentH = avgItemH * items.length;
+	    var windowContentRatio = windowH / estContentH;
+	    var scrollbarHeight = Math.min(windowH, Math.max(20, Math.round(windowH * windowContentRatio)));
+	    var scrollH = estContentH - windowH;
+	    var windowPos = top !== null ? winStart * avgItemH + top : winStart * avgItemH + (contentH - windowH - bottom);
+	    var windowPosRatio = windowPos / scrollH;
+	    var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
+
+	    return { scrollbarTop: scrollbarTop, scrollbarHeight: scrollbarHeight };
 	  }
 	});
 
