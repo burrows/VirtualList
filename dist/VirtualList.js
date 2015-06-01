@@ -53,7 +53,7 @@ this["VirtualList"] =
 	  displayName: "VirtualList",
 
 	  propTypes: {
-	    content: React.PropTypes.array.isRequired,
+	    items: React.PropTypes.array.isRequired,
 	    windowSize: React.PropTypes.number
 	  },
 
@@ -70,8 +70,7 @@ this["VirtualList"] =
 	  },
 
 	  render: function render() {
-	    var content = this.props.content,
-	        items = content.slice(this.state.winStart, this.state.winStart + this.props.windowSize),
+	    var items = this.props.items.slice(this.state.winStart, this.state.winStart + this.props.windowSize),
 	        style = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflowY: "hidden" },
 	        cstyle = {
 	      position: "absolute",
@@ -101,7 +100,7 @@ this["VirtualList"] =
 	          return React.createElement(
 	            "div",
 	            { key: i, className: "VirtualList-item" },
-	            React.addons.cloneWithProps(this.props.children, { content: item })
+	            React.addons.cloneWithProps(this.props.children, { item: item })
 	          );
 	        }, this)
 	      ),
@@ -119,9 +118,9 @@ this["VirtualList"] =
 	  },
 
 	  scroll: function scroll(delta) {
-	    var content = this.props.content,
-	        winSize = Math.min(this.props.windowSize, this.props.content.length),
-	        maxWinStart = content.length - winSize,
+	    var items = this.props.items,
+	        winSize = Math.min(this.props.windowSize, items.length),
+	        maxWinStart = items.length - winSize,
 	        winStart = this.state.winStart,
 	        node = this.getDOMNode(),
 	        contentNode = this.refs.content.getDOMNode(),
@@ -196,7 +195,7 @@ this["VirtualList"] =
 
 	    // calculate scrollbar position and height
 	    var avgItemH = contentH / itemNodes.length;
-	    var estContentH = avgItemH * content.length;
+	    var estContentH = avgItemH * items.length;
 	    var windowContentRatio = windowH / estContentH;
 	    var scrollbarHeight = Math.min(windowH, Math.max(20, Math.round(windowH * windowContentRatio)));
 	    var scrollH = estContentH - windowH;
@@ -226,7 +225,7 @@ this["VirtualList"] =
 	    if (this.clientY === e.clientY) {
 	      return;
 	    }
-	    var estContentH = this.props.content.length * this.averageItemHeight();
+	    var estContentH = this.props.items.length * this.averageItemHeight();
 	    var windowH = this.getDOMNode().clientHeight;
 	    var rawDelta = e.clientY - this.clientY;
 	    var delta = Math.round(rawDelta / windowH * estContentH);
@@ -256,7 +255,7 @@ this["VirtualList"] =
 	      i++;
 	    }
 
-	    return this.props.content[i];
+	    return this.props.items[i];
 	  }
 	});
 
