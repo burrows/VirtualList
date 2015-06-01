@@ -100,7 +100,7 @@ this["VirtualList"] =
 	          return React.createElement(
 	            "div",
 	            { key: i, className: "VirtualList-item" },
-	            React.addons.cloneWithProps(this.props.children, { item: item })
+	            React.addons.cloneWithProps(this.props.children, { item: item, itemIndex: this.state.winStart + i })
 	          );
 	        }, this)
 	      ),
