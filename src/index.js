@@ -71,6 +71,7 @@ var VirtualList = React.createClass({
     var contentH = contentNode.offsetHeight;
     var top = this.state.top;
     var movedToTop = 0;
+    var topAdjust = 0;
     var rem, i, n;
 
     if (delta < -contentH) {
@@ -105,12 +106,14 @@ var VirtualList = React.createClass({
       for (i = 0, n = itemNodes.length; i < n; i++) {
         if (winStart === maxWinStart) { break; }
 
-        if (top > itemNodes[i].offsetTop + itemNodes[i].offsetHeight) {
+        if (top > (itemNodes[i].offsetTop + itemNodes[i].offsetHeight)) {
           winStart++;
-          top = top - itemNodes[i].offsetHeight;
+          topAdjust += itemNodes[i].offsetHeight;
         }
         else { break; }
       }
+
+      top = top - topAdjust;
 
       // ensure that we don't scroll past the bottom of the list
       if (winStart === maxWinStart) { top = Math.min(top, contentH - windowH); }

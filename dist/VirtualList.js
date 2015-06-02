@@ -127,6 +127,7 @@ this["VirtualList"] =
 	    var contentH = contentNode.offsetHeight;
 	    var top = this.state.top;
 	    var movedToTop = 0;
+	    var topAdjust = 0;
 	    var rem, i, n;
 
 	    if (delta < -contentH) {
@@ -167,11 +168,13 @@ this["VirtualList"] =
 
 	        if (top > itemNodes[i].offsetTop + itemNodes[i].offsetHeight) {
 	          winStart++;
-	          top = top - itemNodes[i].offsetHeight;
+	          topAdjust += itemNodes[i].offsetHeight;
 	        } else {
 	          break;
 	        }
 	      }
+
+	      top = top - topAdjust;
 
 	      // ensure that we don't scroll past the bottom of the list
 	      if (winStart === maxWinStart) {
