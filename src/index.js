@@ -36,7 +36,7 @@ var VirtualList = React.createClass({
             return (
               <div key={i} className="VirtualList-item">
                 {
-                  React.addons.cloneWithProps(this.props.children, {
+                  React.addons.cloneWithProps(React.Children.only(this.props.children), {
                     item, itemIndex: this.state.winStart + i
                   })
                 }
