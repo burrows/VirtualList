@@ -178,12 +178,9 @@ this["VirtualList"] =
 	      }
 	    }
 
-	    var scrollbarPos = this.calcScrollbarPos(winStart, top);
 	    var state = {
 	      winStart: winStart,
-	      top: top,
-	      scrollbarTop: scrollbarPos.scrollbarTop,
-	      scrollbarHeight: scrollbarPos.scrollbarHeight
+	      top: top
 	    };
 
 	    if (movedToTop) {
@@ -191,6 +188,9 @@ this["VirtualList"] =
 	        this.processNewTopItems(movedToTop);
 	      });
 	    } else {
+	      var scrollbarPos = this.calcScrollbarPos(winStart, top);
+	      state.scrollbarTop = scrollbarPos.scrollbarTop;
+	      state.scrollbarHeight = scrollbarPos.scrollbarHeight;
 	      this.setState(state);
 	    }
 
@@ -207,7 +207,13 @@ this["VirtualList"] =
 	      top += itemNodes[i].offsetHeight;
 	    }
 
-	    this.setState({ top: top });
+	    var scrollbarPos = this.calcScrollbarPos(this.state.winStart, top);
+
+	    this.setState({
+	      top: top,
+	      scrollbarTop: scrollbarPos.scrollbarTop,
+	      scrollbarHeight: scrollbarPos.scrollbarHeight
+	    });
 	  },
 
 	  pageDown: function pageDown() {

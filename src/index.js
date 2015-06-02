@@ -125,12 +125,9 @@ var VirtualList = React.createClass({
       }
     }
 
-    var scrollbarPos = this.calcScrollbarPos(winStart, top);
     var state = {
       winStart,
-      top,
-      scrollbarTop: scrollbarPos.scrollbarTop,
-      scrollbarHeight: scrollbarPos.scrollbarHeight
+      top
     };
 
     if (movedToTop) {
@@ -139,6 +136,9 @@ var VirtualList = React.createClass({
       });
     }
     else {
+      var scrollbarPos = this.calcScrollbarPos(winStart, top);
+      state.scrollbarTop = scrollbarPos.scrollbarTop;
+      state.scrollbarHeight = scrollbarPos.scrollbarHeight;
       this.setState(state);
     }
 
@@ -155,7 +155,13 @@ var VirtualList = React.createClass({
       top += itemNodes[i].offsetHeight;
     }
 
-    this.setState({top: top});
+    var scrollbarPos = this.calcScrollbarPos(this.state.winStart, top);
+
+    this.setState({
+      top: top,
+      scrollbarTop: scrollbarPos.scrollbarTop,
+      scrollbarHeight: scrollbarPos.scrollbarHeight
+    });
   },
 
   pageDown() {
