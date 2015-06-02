@@ -1,34 +1,26 @@
 var slice = Array.prototype.slice;
 
 var VirtualList = React.createClass({
-  propTypes: {
-    items: React.PropTypes.array.isRequired,
-    windowSize: React.PropTypes.number
-  },
+  propTypes: {items: React.PropTypes.array.isRequired, windowSize: React.PropTypes.number},
 
-  getDefaultProps() {
-    return {windowSize: 10};
-  },
+  getDefaultProps() { return {windowSize: 10}; },
 
-  getInitialState() {
-    return {winStart: 0, top: 0, scrollbarTop: 0, scrollbarHeight: 0};
-  },
+  getInitialState() { return {winStart: 0, top: 0, scrollbarTop: 0, scrollbarHeight: 0}; },
 
   componentDidMount() { this.scroll(0); },
 
   render() {
-    var items   = this.props.items.slice(this.state.winStart, this.state.winStart + this.props.windowSize);
-    var style   = {position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'hidden'};
-    var cstyle  = {
+    var winStart = this.state.winStart;
+    var winSize = this.props.windowSize;
+    var scrollTop = this.state.scrollbarTop;
+    var scrollHeight = this.state.scrollbarHeight;
+    var items = this.props.items.slice(winStart, winStart + winSize);
+    var style = {position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'hidden'};
+    var cstyle = {position: 'absolute', top: -this.state.top, left: 0, right: 0 };
+    var sstyle = {
       position: 'absolute',
-      top: -this.state.top,
-      left: 0,
-      right: 0
-    };
-    var sstyle  = {
-      position: 'absolute',
-      top: this.state.scrollbarTop,
-      height: this.state.scrollbarHeight,
+      top: scrollTop,
+      height: scrollHeight,
       right: 1,
       width: 7,
       backgroundColor: '#000',
@@ -37,12 +29,17 @@ var VirtualList = React.createClass({
     };
 
     return (
-      <div className="VirtualList" tabIndex="0" style={style} onWheel={this.onWheel} onKeyDown={this.onKeyDown}>
+      <div className="VirtualList" tabIndex="0" style={style} onWheel={this.onWheel}
+        onKeyDown={this.onKeyDown}>
         <div ref="content" className="VirtualList-content" style={cstyle}>
           {items.map(function(item, i) {
             return (
               <div key={i} className="VirtualList-item">
-                {React.addons.cloneWithProps(this.props.children, {item, itemIndex: this.state.winStart + i})}
+                {
+                  React.addons.cloneWithProps(this.props.children, {
+                    item, itemIndex: this.state.winStart + i
+                  })
+                }
               </div>
             );
           }, this)}
@@ -96,14 +93,11 @@ var VirtualList = React.createClass({
           winStart--;
           movedToTop++;
         }
-        else {
-          break;
-        }
+        else { break; }
       }
 
-      if (winStart === 0) {
-        top = Math.max(0, top);
-      }
+      // ensure that we don't scroll past the top of the list
+      if (winStart === 0) { top = Math.max(0, top); }
     }
     else if (delta > 0) {
       top += delta;
@@ -115,25 +109,17 @@ var VirtualList = React.createClass({
           winStart++;
           top = top - itemNodes[i].offsetHeight;
         }
-        else {
-          break;
-        }
+        else { break; }
       }
 
-      if (winStart === maxWinStart) {
-        top = Math.min(top, contentH - windowH);
-      }
+      // ensure that we don't scroll past the bottom of the list
+      if (winStart === maxWinStart) { top = Math.min(top, contentH - windowH); }
     }
 
-    var state = {
-      winStart,
-      top
-    };
+    var state = {winStart, top};
 
     if (movedToTop) {
-      this.setState(state, function() {
-        this.processNewTopItems(movedToTop);
-      });
+      this.setState(state, function() { this.processNewTopItems(movedToTop); });
     }
     else {
       var scrollbarPos = this.calcScrollbarPos(winStart, top);
@@ -164,13 +150,9 @@ var VirtualList = React.createClass({
     });
   },
 
-  pageDown() {
-    return this.scroll(this.getDOMNode().clientHeight);
-  },
+  pageDown() { return this.scroll(this.getDOMNode().clientHeight); },
 
-  pageUp() {
-    return this.scroll(-this.getDOMNode().clientHeight);
-  },
+  pageUp() { return this.scroll(-this.getDOMNode().clientHeight); },
 
   scrollToItem(item) {
     var items = this.props.items;
@@ -210,24 +192,24 @@ var VirtualList = React.createClass({
   },
 
   onScrollStart(e) {
-    this.clientY = e.clientY;
+    this._clientY = e.clientY;
     document.addEventListener('mousemove', this.onScroll);
     document.addEventListener('mouseup', this.onScrollStop);
   },
 
   onScroll(e) {
     e.preventDefault();
-    if (this.clientY === e.clientY) { return; }
+    if (this._clientY === e.clientY) { return; }
     var estContentH = this.props.items.length * this.averageItemHeight();
     var windowH = this.getDOMNode().clientHeight;
-    var rawDelta = e.clientY - this.clientY;
+    var rawDelta = e.clientY - this._clientY;
     var delta = Math.round((rawDelta / windowH) * estContentH);
     this.scroll(delta);
-    this.clientY = e.clientY;
+    this._clientY = e.clientY;
   },
 
   onScrollStop() {
-    this.clientY = null;
+    this._clientY = null;
     document.removeEventListener('mousemove', this.onScroll);
     document.removeEventListener('mouseup', this.onScrollStop);
   },
@@ -238,10 +220,10 @@ var VirtualList = React.createClass({
   },
 
   findFirstVisible() {
-    var contentNode   = this.refs.content.getDOMNode();
+    var contentNode = this.refs.content.getDOMNode();
     var contentOffset = -contentNode.offsetTop;
-    var itemNodes     = slice.call(contentNode.childNodes);
-    var i             = this.state.winStart;
+    var itemNodes = slice.call(contentNode.childNodes);
+    var i = this.state.winStart;
 
     while (itemNodes.length && itemNodes[0].offsetTop + itemNodes[0].offsetHeight < contentOffset) {
       itemNodes.shift();

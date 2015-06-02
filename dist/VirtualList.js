@@ -52,10 +52,7 @@ this["VirtualList"] =
 	var VirtualList = React.createClass({
 	  displayName: "VirtualList",
 
-	  propTypes: {
-	    items: React.PropTypes.array.isRequired,
-	    windowSize: React.PropTypes.number
-	  },
+	  propTypes: { items: React.PropTypes.array.isRequired, windowSize: React.PropTypes.number },
 
 	  getDefaultProps: function getDefaultProps() {
 	    return { windowSize: 10 };
@@ -70,18 +67,17 @@ this["VirtualList"] =
 	  },
 
 	  render: function render() {
-	    var items = this.props.items.slice(this.state.winStart, this.state.winStart + this.props.windowSize);
+	    var winStart = this.state.winStart;
+	    var winSize = this.props.windowSize;
+	    var scrollTop = this.state.scrollbarTop;
+	    var scrollHeight = this.state.scrollbarHeight;
+	    var items = this.props.items.slice(winStart, winStart + winSize);
 	    var style = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflowY: "hidden" };
-	    var cstyle = {
-	      position: "absolute",
-	      top: -this.state.top,
-	      left: 0,
-	      right: 0
-	    };
+	    var cstyle = { position: "absolute", top: -this.state.top, left: 0, right: 0 };
 	    var sstyle = {
 	      position: "absolute",
-	      top: this.state.scrollbarTop,
-	      height: this.state.scrollbarHeight,
+	      top: scrollTop,
+	      height: scrollHeight,
 	      right: 1,
 	      width: 7,
 	      backgroundColor: "#000",
@@ -91,7 +87,8 @@ this["VirtualList"] =
 
 	    return React.createElement(
 	      "div",
-	      { className: "VirtualList", tabIndex: "0", style: style, onWheel: this.onWheel, onKeyDown: this.onKeyDown },
+	      { className: "VirtualList", tabIndex: "0", style: style, onWheel: this.onWheel,
+	        onKeyDown: this.onKeyDown },
 	      React.createElement(
 	        "div",
 	        { ref: "content", className: "VirtualList-content", style: cstyle },
@@ -99,7 +96,9 @@ this["VirtualList"] =
 	          return React.createElement(
 	            "div",
 	            { key: i, className: "VirtualList-item" },
-	            React.addons.cloneWithProps(this.props.children, { item: item, itemIndex: this.state.winStart + i })
+	            React.addons.cloneWithProps(this.props.children, {
+	              item: item, itemIndex: this.state.winStart + i
+	            })
 	          );
 	        }, this)
 	      ),
@@ -154,6 +153,7 @@ this["VirtualList"] =
 	        }
 	      }
 
+	      // ensure that we don't scroll past the top of the list
 	      if (winStart === 0) {
 	        top = Math.max(0, top);
 	      }
@@ -173,15 +173,13 @@ this["VirtualList"] =
 	        }
 	      }
 
+	      // ensure that we don't scroll past the bottom of the list
 	      if (winStart === maxWinStart) {
 	        top = Math.min(top, contentH - windowH);
 	      }
 	    }
 
-	    var state = {
-	      winStart: winStart,
-	      top: top
-	    };
+	    var state = { winStart: winStart, top: top };
 
 	    if (movedToTop) {
 	      this.setState(state, function () {
@@ -276,26 +274,26 @@ this["VirtualList"] =
 	  },
 
 	  onScrollStart: function onScrollStart(e) {
-	    this.clientY = e.clientY;
+	    this._clientY = e.clientY;
 	    document.addEventListener("mousemove", this.onScroll);
 	    document.addEventListener("mouseup", this.onScrollStop);
 	  },
 
 	  onScroll: function onScroll(e) {
 	    e.preventDefault();
-	    if (this.clientY === e.clientY) {
+	    if (this._clientY === e.clientY) {
 	      return;
 	    }
 	    var estContentH = this.props.items.length * this.averageItemHeight();
 	    var windowH = this.getDOMNode().clientHeight;
-	    var rawDelta = e.clientY - this.clientY;
+	    var rawDelta = e.clientY - this._clientY;
 	    var delta = Math.round(rawDelta / windowH * estContentH);
 	    this.scroll(delta);
-	    this.clientY = e.clientY;
+	    this._clientY = e.clientY;
 	  },
 
 	  onScrollStop: function onScrollStop() {
-	    this.clientY = null;
+	    this._clientY = null;
 	    document.removeEventListener("mousemove", this.onScroll);
 	    document.removeEventListener("mouseup", this.onScrollStop);
 	  },
