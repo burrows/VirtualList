@@ -11,7 +11,7 @@ var VirtualList = React.createClass({
   },
 
   getInitialState() {
-    return {winStart: 0, top: 0, bottom: null, scrollbarTop: 0, scrollbarHeight: 0};
+    return {winStart: 0, top: 0, scrollbarTop: 0, scrollbarHeight: 0};
   },
 
   componentDidMount() { this.scroll(0); },
@@ -21,8 +21,7 @@ var VirtualList = React.createClass({
     var style   = {position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'hidden'};
     var cstyle  = {
       position: 'absolute',
-      top: typeof this.state.top === 'number' ? -this.state.top : null,
-      bottom: typeof this.state.bottom === 'number' ? -this.state.bottom : null,
+      top: -this.state.top,
       left: 0,
       right: 0
     };
@@ -74,55 +73,39 @@ var VirtualList = React.createClass({
     var windowH = node.clientHeight;
     var contentH = contentNode.offsetHeight;
     var top = this.state.top;
-    var bottom = this.state.bottom;
+    var movedToTop = 0;
     var rem, i, n;
 
     if (delta < -contentH) {
       rem = Math.round((-delta - top) / this.averageItemHeight());
       winStart = Math.max(0, winStart - rem);
       top = 0;
-      bottom = null;
     }
     else if (delta > contentH) {
       rem = Math.round((delta - contentH - top) / this.averageItemHeight());
       winStart = Math.min(maxWinStart, winStart + winSize + rem);
       top = 0;
-      bottom = null;
     }
     else if (delta < 0) {
-      if (top !== null) {
-        bottom = contentNode.offsetHeight - node.offsetHeight - top;
-        top = null;
-      }
-
-      if (winStart === 0 && -delta > contentH - windowH - bottom) {
-        delta = -Math.max(0, contentH - windowH - bottom);
-      }
-
-      bottom = bottom + (-delta);
+      top += delta;
 
       for (i = itemNodes.length - 1; i >= 0; i--) {
         if (winStart === 0) { break; }
 
-        if (bottom > itemNodes[i].offsetHeight) {
+        if (itemNodes[i].offsetTop > windowH + top) {
           winStart--;
-          bottom = bottom - itemNodes[i].offsetHeight;
+          movedToTop++;
         }
         else {
           break;
         }
       }
+
+      if (winStart === 0) {
+        top = Math.max(0, top);
+      }
     }
     else if (delta > 0) {
-      if (bottom !== null) {
-        top = contentNode.offsetHeight - node.offsetHeight - bottom;
-        bottom = null;
-      }
-
-      if (winStart === maxWinStart && delta > contentH - windowH - top) {
-        delta = Math.max(0, contentH - windowH - top);
-      }
-
       top += delta;
 
       for (i = 0, n = itemNodes.length; i < n; i++) {
@@ -136,19 +119,43 @@ var VirtualList = React.createClass({
           break;
         }
       }
+
+      if (winStart === maxWinStart) {
+        top = Math.min(top, contentH - windowH);
+      }
     }
 
-    var scrollbarPos = this.calcScrollbarPos(winStart, top, bottom);
-
-    this.setState({
+    var scrollbarPos = this.calcScrollbarPos(winStart, top);
+    var state = {
       winStart,
       top,
-      bottom,
       scrollbarTop: scrollbarPos.scrollbarTop,
       scrollbarHeight: scrollbarPos.scrollbarHeight
-    });
+    };
+
+    if (movedToTop) {
+      this.setState(state, function() {
+        this.processNewTopItems(movedToTop);
+      });
+    }
+    else {
+      this.setState(state);
+    }
 
     return this;
+  },
+
+  processNewTopItems(n) {
+    var contentNode = this.refs.content.getDOMNode();
+    var itemNodes = contentNode.childNodes;
+    var top = this.state.top;
+    var i;
+
+    for (i = 0; i < n; i++) {
+      top += itemNodes[i].offsetHeight;
+    }
+
+    this.setState({top: top});
   },
 
   pageDown() {
@@ -169,8 +176,7 @@ var VirtualList = React.createClass({
 
     var winStart = Math.min(maxWinStart, index);
     var top = 0;
-    var bottom = null;
-    var scrollbarPos = this.calcScrollbarPos(winStart, top, bottom);
+    var scrollbarPos = this.calcScrollbarPos(winStart, top);
 
     this.setState({
       winStart,
@@ -239,7 +245,7 @@ var VirtualList = React.createClass({
     return this.props.items[i];
   },
 
-  calcScrollbarPos(winStart, top, bottom) {
+  calcScrollbarPos(winStart, top) {
     var contentNode = this.refs.content.getDOMNode();
     var contentH = contentNode.offsetHeight;
     var numItemNodes = contentNode.childNodes.length
@@ -249,8 +255,7 @@ var VirtualList = React.createClass({
     var windowContentRatio = windowH / estContentH;
     var scrollbarHeight = Math.min(windowH, Math.max(20, Math.round(windowH * windowContentRatio)));
     var scrollH = estContentH - windowH;
-    var windowPos = top !== null ? winStart * avgItemH + top :
-      winStart * avgItemH + (contentH - windowH - bottom);
+    var windowPos = winStart * avgItemH + top;
     var windowPosRatio = windowPos / scrollH;
     var scrollbarTop = Math.round(windowH - scrollbarHeight) * windowPosRatio;
 
@@ -259,4 +264,3 @@ var VirtualList = React.createClass({
 });
 
 export default VirtualList;
-
