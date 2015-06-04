@@ -225,8 +225,7 @@ var VirtualList = React.createClass({
   },
 
   onKeyDown(e) {
-    if (e.which === 32)      { if (e.shiftKey) { this.pageUp(); } else { this.pageDown(); } }
-    else if (e.which === 33) { this.pageUp(); }
+    if      (e.which === 33) { this.pageUp(); }
     else if (e.which === 34) { this.pageDown(); }
     else if (e.which === 38) { this.scroll(-20); }
     else if (e.which === 40) { this.scroll(20); }

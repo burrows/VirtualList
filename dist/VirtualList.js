@@ -303,13 +303,7 @@ this["VirtualList"] =
 	  },
 
 	  onKeyDown: function onKeyDown(e) {
-	    if (e.which === 32) {
-	      if (e.shiftKey) {
-	        this.pageUp();
-	      } else {
-	        this.pageDown();
-	      }
-	    } else if (e.which === 33) {
+	    if (e.which === 33) {
 	      this.pageUp();
 	    } else if (e.which === 34) {
 	      this.pageDown();
