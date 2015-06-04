@@ -79,7 +79,6 @@ this["VirtualList"] =
 	    var itemView = this.props.itemView;
 	    var winStart = this.props.winStart;
 	    var winSize = this.props.winSize;
-	    var keyFn = this.props.keyFn;
 
 	    return React.createElement(
 	      "div",
@@ -100,8 +99,7 @@ this["VirtualList"] =
 
 	  propTypes: {
 	    items: React.PropTypes.array.isRequired,
-	    windowSize: React.PropTypes.number,
-	    keyFn: React.PropTypes.func
+	    windowSize: React.PropTypes.number
 	  },
 
 	  getDefaultProps: function getDefaultProps() {
@@ -144,7 +142,6 @@ this["VirtualList"] =
 	          ref: "items",
 	          items: this.props.items,
 	          itemView: React.Children.only(this.props.children),
-	          keyFn: this.props.keyFn,
 	          winStart: this.state.winStart,
 	          winSize: this.props.windowSize })
 	      ),

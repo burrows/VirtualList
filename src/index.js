@@ -22,7 +22,6 @@ var Items = React.createClass({
     var itemView = this.props.itemView;
     var winStart = this.props.winStart;
     var winSize = this.props.winSize;
-    var keyFn = this.props.keyFn;
 
     return (
       <div className="VirtualList-items">
@@ -45,8 +44,7 @@ var Items = React.createClass({
 var VirtualList = React.createClass({
   propTypes: {
     items: React.PropTypes.array.isRequired,
-    windowSize: React.PropTypes.number,
-    keyFn: React.PropTypes.func
+    windowSize: React.PropTypes.number
   },
 
   getDefaultProps() { return {windowSize: 10}; },
@@ -80,7 +78,6 @@ var VirtualList = React.createClass({
             ref="items"
             items={this.props.items}
             itemView={React.Children.only(this.props.children)}
-            keyFn={this.props.keyFn}
             winStart={this.state.winStart}
             winSize={this.props.windowSize} />
         </div>

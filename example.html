@@ -59,7 +59,6 @@
             React.createElement('div', {className: 'container'},
               React.createElement(VirtualList, {
                 items: items,
-                //keyFn: function(item) { return item.id; },
                 onFirstVisibleChange: function(item) {
                   _this.setState({first: item});
                 }
