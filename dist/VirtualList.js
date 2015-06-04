@@ -125,6 +125,7 @@ this["VirtualList"] =
 	    var itemNodes = slice.call(contentNode.childNodes);
 	    var windowH = node.clientHeight;
 	    var contentH = contentNode.offsetHeight;
+	    var canScroll = contentH > windowH;
 	    var top = this.state.top;
 	    var movedToTop = 0;
 	    var topAdjust = 0;
@@ -138,7 +139,7 @@ this["VirtualList"] =
 	      rem = Math.round((delta - contentH - top) / this.averageItemHeight());
 	      winStart = Math.min(maxWinStart, winStart + winSize + rem);
 	      top = 0;
-	    } else if (delta < 0) {
+	    } else if (delta < 0 && canScroll) {
 	      top += delta;
 
 	      for (i = itemNodes.length - 1; i >= 0; i--) {
@@ -158,7 +159,7 @@ this["VirtualList"] =
 	      if (winStart === 0) {
 	        top = Math.max(0, top);
 	      }
-	    } else if (delta > 0) {
+	    } else if (delta > 0 && canScroll) {
 	      top += delta;
 
 	      for (i = 0, n = itemNodes.length; i < n; i++) {
