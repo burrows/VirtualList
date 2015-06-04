@@ -1,7 +1,11 @@
 var slice = Array.prototype.slice;
 
 var VirtualList = React.createClass({
-  propTypes: {items: React.PropTypes.array.isRequired, windowSize: React.PropTypes.number},
+  propTypes: {
+    items: React.PropTypes.array.isRequired,
+    windowSize: React.PropTypes.number,
+    keyFn: React.PropTypes.func
+  },
 
   getDefaultProps() { return {windowSize: 10}; },
 
@@ -10,13 +14,14 @@ var VirtualList = React.createClass({
   componentDidMount() { this.scroll(0); },
 
   render() {
+    var keyFn = this.props.keyFn;
     var winStart = this.state.winStart;
     var winSize = this.props.windowSize;
     var scrollTop = this.state.scrollbarTop;
     var scrollHeight = this.state.scrollbarHeight;
     var items = this.props.items.slice(winStart, winStart + winSize);
     var style = {position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'hidden'};
-    var cstyle = {position: 'absolute', top: -this.state.top, left: 0, right: 0 };
+    var cstyle = {transform: `translate3d(0, ${-this.state.top}px, 0)`};
     var sstyle = {
       position: 'absolute',
       top: scrollTop,
@@ -28,15 +33,17 @@ var VirtualList = React.createClass({
       borderRadius: 10
     };
 
+    var child = React.Children.only(this.props.children);
+
     return (
       <div className="VirtualList" tabIndex="0" style={style} onWheel={this.onWheel}
         onKeyDown={this.onKeyDown}>
         <div ref="content" className="VirtualList-content" style={cstyle}>
           {items.map(function(item, i) {
             return (
-              <div key={i} className="VirtualList-item">
+              <div key={keyFn ? keyFn(item) : i} className="VirtualList-item">
                 {
-                  React.addons.cloneWithProps(React.Children.only(this.props.children), {
+                  React.addons.cloneWithProps(child, {
                     item, itemIndex: this.state.winStart + i
                   })
                 }
