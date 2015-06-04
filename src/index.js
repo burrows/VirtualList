@@ -1,5 +1,47 @@
 var slice = Array.prototype.slice;
 
+var Item = React.createClass({
+  shouldComponentUpdate(nextProps) {
+    return this.props.item !== nextProps.item || this.props.itemIndex !== nextProps.itemIndex;
+  },
+
+  render() {
+    var itemView = React.addons.cloneWithProps(this.props.itemView, {
+      item: this.props.item, itemIndex: this.props.itemIndex
+    });
+    return <div className="VirtualList-item">{itemView}</div>;
+  }
+});
+
+var Items = React.createClass({
+  shouldComponentUpdate(nextProps) {
+    return this.props.winStart !== nextProps.winStart;
+  },
+
+  render() {
+    var itemView = this.props.itemView;
+    var winStart = this.props.winStart;
+    var winSize = this.props.winSize;
+    var keyFn = this.props.keyFn;
+
+    return (
+      <div className="VirtualList-items">
+        {
+          this.props.items.slice(winStart, winStart + winSize).map(function(item, i) {
+            return (
+              <Item
+                key={(winStart + i) % winSize}
+                itemView={itemView}
+                item={item}
+                itemIndex={winStart + i} />
+            );
+          })
+        }
+      </div>
+    );
+  }
+});
+
 var VirtualList = React.createClass({
   propTypes: {
     items: React.PropTypes.array.isRequired,
@@ -14,14 +56,11 @@ var VirtualList = React.createClass({
   componentDidMount() { this.scroll(0); },
 
   render() {
-    var keyFn = this.props.keyFn;
-    var winStart = this.state.winStart;
-    var winSize = this.props.windowSize;
     var scrollTop = this.state.scrollbarTop;
     var scrollHeight = this.state.scrollbarHeight;
-    var items = this.props.items.slice(winStart, winStart + winSize);
     var style = {position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'hidden'};
     var cstyle = {transform: `translate3d(0, ${-this.state.top}px, 0)`};
+    //var cstyle = {position: 'absolute', top: -this.state.top, right: 0, left: 0};
     var sstyle = {
       position: 'absolute',
       top: scrollTop,
@@ -33,23 +72,17 @@ var VirtualList = React.createClass({
       borderRadius: 10
     };
 
-    var child = React.Children.only(this.props.children);
-
     return (
       <div className="VirtualList" tabIndex="0" style={style} onWheel={this.onWheel}
         onKeyDown={this.onKeyDown}>
         <div ref="content" className="VirtualList-content" style={cstyle}>
-          {items.map(function(item, i) {
-            return (
-              <div key={keyFn ? keyFn(item) : i} className="VirtualList-item">
-                {
-                  React.addons.cloneWithProps(child, {
-                    item, itemIndex: this.state.winStart + i
-                  })
-                }
-              </div>
-            );
-          }, this)}
+          <Items
+            ref="items"
+            items={this.props.items}
+            itemView={React.Children.only(this.props.children)}
+            keyFn={this.props.keyFn}
+            winStart={this.state.winStart}
+            winSize={this.props.windowSize} />
         </div>
         <div className="VirtualList-scrollbar" style={sstyle} onMouseDown={this.onScrollStart}>
         </div>
@@ -73,7 +106,7 @@ var VirtualList = React.createClass({
     var winStart = this.state.winStart;
     var node = this.getDOMNode();
     var contentNode = this.refs.content.getDOMNode();
-    var itemNodes = slice.call(contentNode.childNodes);
+    var itemNodes = slice.call(this.refs.items.getDOMNode().childNodes);
     var windowH = node.clientHeight;
     var contentH = contentNode.offsetHeight;
     var canScroll = contentH > windowH;
@@ -144,7 +177,7 @@ var VirtualList = React.createClass({
 
   processNewTopItems(n) {
     var contentNode = this.refs.content.getDOMNode();
-    var itemNodes = contentNode.childNodes;
+    var itemNodes = this.refs.items.getDOMNode().childNodes;
     var top = this.state.top;
     var i;
 
@@ -233,7 +266,7 @@ var VirtualList = React.createClass({
   findFirstVisible() {
     var contentNode = this.refs.content.getDOMNode();
     var contentOffset = -contentNode.offsetTop;
-    var itemNodes = slice.call(contentNode.childNodes);
+    var itemNodes = slice.call(this.refs.items.getDOMNode().childNodes);
     var i = this.state.winStart;
 
     while (itemNodes.length && itemNodes[0].offsetTop + itemNodes[0].offsetHeight < contentOffset) {
@@ -247,7 +280,7 @@ var VirtualList = React.createClass({
   calcScrollbarPos(winStart, top) {
     var contentNode = this.refs.content.getDOMNode();
     var contentH = contentNode.offsetHeight;
-    var numItemNodes = contentNode.childNodes.length
+    var numItemNodes = this.refs.items.getDOMNode().childNodes.length
     var windowH = this.getDOMNode().clientHeight;
     var avgItemH = contentH / numItemNodes;
     var estContentH = avgItemH * this.props.items.length;
