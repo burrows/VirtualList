@@ -303,6 +303,10 @@ this["VirtualList"] =
 	  },
 
 	  onKeyDown: function onKeyDown(e) {
+	    if (e.target !== this.getDOMNode()) {
+	      return;
+	    }
+
 	    if (e.which === 33) {
 	      this.pageUp();
 	    } else if (e.which === 34) {

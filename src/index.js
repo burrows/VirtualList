@@ -225,6 +225,8 @@ var VirtualList = React.createClass({
   },
 
   onKeyDown(e) {
+    if (e.target !== this.getDOMNode()) { return; }
+
     if      (e.which === 33) { this.pageUp(); }
     else if (e.which === 34) { this.pageDown(); }
     else if (e.which === 38) { this.scroll(-20); }
